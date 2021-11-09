@@ -6,6 +6,7 @@
 #include <functional>
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 /// \brief A data structure consisting of (key, value) pairs that can be
 /// obtained based on the key in constant time.
