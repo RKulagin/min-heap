@@ -1,4 +1,4 @@
-// Copyright 2021 Your Name <your_email>
+// Copyright 2021 RKulagin
 
 #ifndef INCLUDE_MIN_HEAP_HPP_
 #define INCLUDE_MIN_HEAP_HPP_
@@ -115,6 +115,12 @@ class Heap {
   std::pair<node, size_t> find(const key_type& key) const {
     auto i = index.at(key);
     return {heap[i], i};
+  }
+
+  /// \brief Checks if the heap contains a (key, value) pair with the given key
+  /// \param key Key of (key, value) pair to be checked
+  inline bool isin(const key_type& key) const{
+    return index.count(key) == 1;
   }
 
  private:

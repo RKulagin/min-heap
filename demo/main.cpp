@@ -18,10 +18,10 @@ int main() {
         heap.erase(key);
       } else if (command == "search") {
         std::cin >> key;
-        try {
+        if (heap.isin(key)) {
           auto [node, index] = heap.find(key);
           std::cout << "1 " << index << " " << node.second << std::endl;
-        } catch (std::out_of_range&) {
+        } else {
           std::cout << "0" << std::endl;
         }
       } else if (command == "min") {
