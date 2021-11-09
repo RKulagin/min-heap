@@ -9,26 +9,26 @@ TEST(Heap, RValue) {
   Heap<int64_t, std::string> heap;
   heap.insert(10, "10");
   auto correct = std::make_pair<int64_t, std::string>(10, "10");
-  EXPECT_EQ(heap.min().first, correct.first);
-  EXPECT_EQ(heap.min().second, correct.second);
+  EXPECT_EQ(heap.min().first.first, correct.first);
+  EXPECT_EQ(heap.min().first.second, correct.second);
   heap.insert(-1, "-1");
   heap.insert(1, "1");
-  EXPECT_EQ(heap.min().first, -1);
-  EXPECT_EQ(heap.min().second, "-1");
+  EXPECT_EQ(heap.min().first.first, -1);
+  EXPECT_EQ(heap.min().first.second, "-1");
   EXPECT_EQ(heap.at(1), "1");
   heap.at(1) = "1000";
   EXPECT_EQ(heap.at(1), "1000");
   auto top = heap.extract_min();
   EXPECT_EQ(top.first, -1);
-  EXPECT_EQ(heap.min().first, 1);
+  EXPECT_EQ(heap.min().first.first, 1);
 }
 
 TEST(Heap, LValue) {
   Heap<int64_t, std::string> heap;
   auto correct = std::make_pair<int64_t, std::string>(10, "10");
   heap.insert(correct.first, correct.second);
-  EXPECT_EQ(heap.min().first, correct.first);
-  EXPECT_EQ(heap.min().second, correct.second);
+  EXPECT_EQ(heap.min().first.first, correct.first);
+  EXPECT_EQ(heap.min().first.second, correct.second);
 }
 
 

@@ -25,11 +25,12 @@ int main() {
           std::cout << "0" << std::endl;
         }
       } else if (command == "min") {
-        std::cout << heap.min().first << " 0 " << heap.min().second
+        auto [node, idx] = heap.min();
+        std::cout << node.first << " " << idx << " " << node.second
                   << std::endl;
       } else if (command == "max") {
-        auto [node, index] = heap.max();
-        std::cout << node.first << " " << index << " " << node.second
+        auto [node, idx] = heap.max();
+        std::cout << node.first << " " << idx << " " << node.second
                   << std::endl;
       } else if (command == "print") {
         std::cout << heap << std::endl;

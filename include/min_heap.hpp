@@ -7,12 +7,22 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+/// \brief A data structure consisting of (key, value) pairs that can be
+/// obtained based on the key in constant time.
+/// \tparam Key Type of key objects.
+/// \tparam Value Type of mapped objects.
+/// \tparam Cmp Comparison function object type, defaults to less<_Key>.
+/// Using standard comparison heap is min-heap.
 template <typename Key, typename Value, typename Cmp = std::less<Key>>
 class Heap {
  public:
   using key_type = Key;
   using value_type = Value;
-
+  using node = std::pair<key_type, value_type>;
+  /// Add (key, value) pair to the heap
+  /// \param key Key of pair to be stored
+  /// \param value Value to be stored
+  /// \return Index of pair in heap
   size_t insert(const key_type& key, const value_type& value) {
     return _insert(key, value);
   }
@@ -21,16 +31,22 @@ class Heap {
     return _insert(std::move(key), std::move(value));
   }
 
-  inline const auto& min() const { return heap[0]; }
-
-  auto& min() {
+  /// Returns a tuple containing the element with the minimal key.
+  /// \throw std::out_of_range If heap is empty.
+  /// \return A tuple of constant key reference, value reference, and element
+  /// index on the heap.
+  std::pair<const node&, size_t> min() {
     if (heap.empty()) {
       throw std::out_of_range("Heap is empty");
     }
-    return heap[0];
+    return {heap[0], 0};
   }
 
-  std::pair<const std::pair<Key, Value>&, size_t> max() const {
+  /// Returns a tuple containing the element with the maximum key.
+  /// \throw std::out_of_range If heap is empty.
+  /// \return A tuple of constant key reference, value reference, and element
+  /// index on the heap.
+  std::pair<const node&, size_t> max() const {
     if (heap.empty()) {
       throw std::out_of_range("Heap is empty");
     }
@@ -44,10 +60,21 @@ class Heap {
     return {heap[max_index], max_index};
   }
 
+  /// \brief Access to %heap data.
+  /// \param key The key for which data should be retrieved.
+  /// \throw  std::out_of_range If no such data is present.
+  /// \return A reference to the data whose key is equivalent to \a key, if
+  /// such a data is present in the %heap
+  ///
+  /// Provides access to the data contained in heap under key.
+  /// The key is checked that heap contains data with such key.
+  /// The function throws out_of_range if the check fails.
   auto& at(const Key& key) { return heap[index.at(key)].second; }
 
   const auto& at(const Key& key) const { return heap[index.at(key)].second; }
 
+  /// \brief Erases an element with minimal key from a %heap.
+  /// \return Pair of removed key and value.
   auto extract_min() {
     if (heap.empty()) {
       throw std::out_of_range("Heap is empty");
@@ -61,7 +88,10 @@ class Heap {
     return extracted;
   }
 
-  auto erase(const key_type& key) {
+  /// \brief Erases an element from a %heap according to the provided key
+  /// \param key Key of element to be erased
+  /// \throw std::out_of_range If no such element with \a key in %heap
+  void erase(const key_type& key) {
     auto place = index.at(key);
     std::swap(heap[place], heap.back());
     index[heap[place].first] = place;
@@ -70,10 +100,18 @@ class Heap {
     heapify(place);
   }
 
+  /// Returns true if the %heap is empty.
   inline bool empty() const { return heap.empty(); }
-  inline bool size() const { return heap.size(); }
 
-  std::pair<std::pair<Key, Value>, size_t> find(const key_type& key) const {
+  /// Returns the size of the %heap
+  inline size_t size() const { return heap.size(); }
+
+  /// \brief Tries to locate an element in a %heap
+  /// \param key Key of (key, value) pair to be located
+  /// \throw std::out_of_range If no such element with \a key in %heap
+  /// \return Pair of located (key, value) pair and index of this pair in
+  /// storage
+  std::pair<node, size_t> find(const key_type& key) const {
     auto i = index.at(key);
     return {heap[i], i};
   }
@@ -100,9 +138,12 @@ class Heap {
     return i;
   }
 
+  /// Rearrange a heap to maintain the heap property.
+  /// \param i Index to start heapify.
   void heapify(size_t i) {
     auto l = left(i);
     auto r = right(i);
+    // Heapify down
     auto smallest = i;
     if (l < heap.size() && cmp(heap[l].first, heap[smallest].first)) {
       smallest = l;
@@ -115,6 +156,7 @@ class Heap {
       std::swap(heap[i], heap[smallest]);
       heapify(smallest);
     }
+    // Heapify up
     if (i > 0 && cmp(heap[i].first, heap[parent(i)].first)) {
       std::swap(index[heap[i].first], index[heap[parent(i)].first]);
       std::swap(heap[i], heap[parent(i)]);
@@ -122,8 +164,8 @@ class Heap {
     }
   }
 
-  std::vector<std::pair<Key, Value>> heap;
-  std::unordered_map<Key, size_t> index;
+  std::vector<node> heap;
+  std::unordered_map<key_type, size_t> index;
   Cmp cmp = Cmp();
 
   template <typename Key_, typename Value_, typename Cmp_>
@@ -131,28 +173,30 @@ class Heap {
                                   const Heap<Key_, Value_, Cmp_>&);
 };
 
+/// Outputs the heap layer by layer to the output stream
 template <typename Key, typename Value, typename Cmp = std::less<Key>>
-std::ostream& operator<<(std::ostream& out, const Heap<Key, Value, Cmp>& heap) {
-  if (heap.empty()) {
+std::ostream& operator<<(std::ostream& out,
+                         const Heap<Key, Value, Cmp>& min_heap) {
+  if (min_heap.empty()) {
     out << "_";
     return out;
   }
   // Print root
-  out << "[" << heap.heap.front().first << " " << heap.heap.front().second
-      << "]";
+  out << "[" << min_heap.heap.front().first << " "
+      << min_heap.heap.front().second << "]";
   // Print non-root part of heap
   size_t i = 1;
   size_t layer_size = 2;
-  while (layer_size <= heap.heap.size()) {
+  while (layer_size <= min_heap.size()) {
     out << "\n";
 
     for (size_t j = 0; j < layer_size; ++j, ++i) {
       if (j != 0) {
         out << " ";
       }
-      if (i < heap.heap.size()) {
-        out << "[" << heap.heap[i].first << " " << heap.heap[i].second << " "
-            << heap.heap[heap.parent(i)].first << "]";
+      if (i < min_heap.size()) {
+        out << "[" << min_heap.heap[i].first << " " << min_heap.heap[i].second
+            << " " << min_heap.heap[min_heap.parent(i)].first << "]";
       } else {
         out << "_";
       }
